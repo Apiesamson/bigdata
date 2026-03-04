@@ -9,6 +9,8 @@ import sys
 import time
 from pathlib import Path
 
+
+
 def run_script(script_name, description):
     """Exécute un script Python via l'interpréteur courant.
 
@@ -27,6 +29,8 @@ def run_script(script_name, description):
     start_time = time.time()
     
     try:
+        # Exécution du script dans un sous-processus.
+        # capture_output=True permet d'afficher ensuite un extrait des résultats.
         result = subprocess.run(
             [sys.executable, script_name], 
             capture_output=True, 
@@ -35,6 +39,7 @@ def run_script(script_name, description):
         )
         
         if result.returncode == 0:
+            # Succès : on affiche un extrait de sortie standard pour le suivi.
             print(f"[OK] {script_name} exécuté avec succès")
             print(f"Temps d'exécution : {time.time() - start_time:.2f} secondes")
             if result.stdout:
@@ -43,6 +48,7 @@ def run_script(script_name, description):
                 for line in lines[-5:]:  # Affiche les 5 dernières lignes
                     print(f"   {line}")
         else:
+            # Erreur : code retour non nul + affichage de stderr si présent.
             print(f"[ERREUR] Erreur lors de l'exécution de {script_name}")
             print(f"Code d'erreur : {result.returncode}")
             if result.stderr:
@@ -50,9 +56,11 @@ def run_script(script_name, description):
             return False
             
     except subprocess.TimeoutExpired:
+        # Erreur : script trop long (évite de bloquer l'orchestrateur).
         print(f"[ERREUR] Timeout lors de l'exécution de {script_name}")
         return False
     except Exception as e:
+        # Erreur inattendue au niveau de l'orchestrateur.
         print(f"[ERREUR] Exception : {e}")
         return False
     
@@ -69,6 +77,7 @@ def check_files():
         "step5_analysis_sipina_optimized.py"
     ]
     
+    # Vérification des entrées/sources et des scripts à exécuter.
     print("Vérification des fichiers requis...")
     missing_files = []
     
@@ -92,7 +101,7 @@ def show_summary():
     print("RÉSUMÉ FINAL DE L'EXÉCUTION")
     print(f"{'='*80}")
     
-    # Vérification des fichiers générés
+    # Vérification des fichiers de données générés.
     output_files = [
         "dataset_reduced.csv",
         "dataset_with_target.csv", 
@@ -107,7 +116,7 @@ def show_summary():
         else:
             print(f"[MANQUANT] {file}")
     
-    # Vérification des visualisations
+    # Vérification des visualisations (outputs/*.png et outputs/*.txt).
     output_dir = Path("outputs")
     if output_dir.exists():
         png_files = list(output_dir.glob("*.png"))
@@ -136,17 +145,17 @@ def main():
     print("DÉMARRAGE DU PROJET D'ANALYSE CLIMATIQUE")
     print(f"{'='*80}")
     
-    # Vérification préliminaire
+    # Étape 0 : vérification préliminaire (fichiers requis).
     if not check_files():
         print("\n[ERREUR] Vérification échouée. Arrêt du programme.")
         return
     
-    # Création du dossier outputs
+    # Création du dossier outputs (si absent).
     output_dir = Path("outputs")
     output_dir.mkdir(exist_ok=True)
     print("Dossier 'outputs' prêt")
     
-    # Liste des étapes à exécuter
+    # Liste des étapes à exécuter (versions optimisées utilisées pour le rapport).
     steps = [
         ("step1_analysis_optimized.py", "Analyse exploratoire des données"),
         ("step2_reduction_optimized.py", "Réduction du volume de données"),
@@ -155,7 +164,9 @@ def main():
         ("step5_analysis_sipina_optimized.py", "Modélisation avec arbre de décision")
     ]
     
-    # Exécution des étapes
+    # Exécution séquentielle.
+    # En cas d'échec, l'orchestrateur continue pour tenter les étapes suivantes,
+    # et affiche la liste des scripts en échec à la fin.
     failed_steps = []
     for script, description in steps:
         if not run_script(script, description):
@@ -163,6 +174,7 @@ def main():
             print(f"[ERREUR] Échec de l'étape : {description}")
             continue
         
+        # Pause pour permettre à l'utilisateur de lire les logs.
         input("\nAppuyez sur Entrée pour continuer à l'étape suivante...")
     
     # Résumé final
@@ -173,12 +185,16 @@ def main():
 
 if __name__ == "__main__":
     try:
+        # Point d'entrée standard Python.
         main()
     except KeyboardInterrupt:
+        # Arrêt volontaire (Ctrl+C).
         print("\n\nExécution interrompue par l'utilisateur")
     except Exception as e:
+        # Sécurité : capture d'erreurs non gérées.
         print(f"\n[ERREUR] Erreur inattendue : {e}")
     finally:
+        # Bloc final toujours exécuté.
         print(f"\n{'='*80}")
         print("Fin du programme")
         print(f"{'='*80}")

@@ -62,6 +62,7 @@ df['temperature_class'] = df['AverageTemperature'].apply(
 
 print("\n4. RÉPARTITION DES CLASSES")
 print("-"*70)
+# Contrôle : la méthode par quantiles doit produire des classes quasi équilibrées.
 class_counts = df['temperature_class'].value_counts()
 class_proportions = df['temperature_class'].value_counts(normalize=True) * 100
 
@@ -90,6 +91,7 @@ colors_map = {'Basse': '#3498db', 'Moyenne': '#f39c12', 'Élevée': '#e74c3c'}
 counts = [class_counts[c] for c in class_order]
 colors = [colors_map[c] for c in class_order]
 
+# Sous-figure (0,0) : barres avec effectifs et pourcentages.
 axes[0, 0].bar(class_order, counts, color=colors, edgecolor='black', linewidth=2)
 axes[0, 0].set_ylabel('Nombre d\'observations')
 axes[0, 0].set_title('Répartition des classes de température', fontweight='bold')
@@ -98,10 +100,12 @@ for i, v in enumerate(counts):
     axes[0, 0].text(i, v + 500, f'{v:,}\n({class_proportions[class_order[i]]:.1f}%)', 
                     ha='center', va='bottom', fontweight='bold')
 
+# Sous-figure (0,1) : pie chart (proportions).
 axes[0, 1].pie(counts, labels=class_order, colors=colors, autopct='%1.1f%%', 
                shadow=True, startangle=90, textprops={'fontsize': 11, 'fontweight': 'bold'})
 axes[0, 1].set_title('Proportion des classes', fontweight='bold')
 
+# Sous-figure (0,2) : histogrammes par classe + seuils quantiles.
 for i, temp_class in enumerate(class_order):
     data = df[df['temperature_class'] == temp_class]['AverageTemperature']
     axes[0, 2].hist(data, bins=30, alpha=0.6, label=temp_class, 
@@ -114,6 +118,7 @@ axes[0, 2].set_title('Distribution des températures par classe', fontweight='bo
 axes[0, 2].legend()
 axes[0, 2].grid(axis='y', alpha=0.3)
 
+# Sous-figure (1,0) : boxplots par classe.
 bp = axes[1, 0].boxplot([df[df['temperature_class'] == c]['AverageTemperature'] for c in class_order],
                         labels=class_order, patch_artist=True, showmeans=True)
 for patch, color in zip(bp['boxes'], colors):
@@ -128,6 +133,7 @@ df['Year'] = df['dt'].dt.year
 yearly_class = df.groupby(['Year', 'temperature_class']).size().unstack(fill_value=0)
 yearly_class_pct = yearly_class.div(yearly_class.sum(axis=1), axis=0) * 100
 
+# Sous-figure (1,1) : évolution temporelle de la proportion de classes.
 axes[1, 1].plot(yearly_class_pct.index, yearly_class_pct['Basse'], 
                 label='Basse', color=colors_map['Basse'], linewidth=2)
 axes[1, 1].plot(yearly_class_pct.index, yearly_class_pct['Moyenne'], 
@@ -142,6 +148,8 @@ axes[1, 1].grid(alpha=0.3)
 
 df['Month'] = df['dt'].dt.month
 monthly_class = df.groupby(['Month', 'temperature_class']).size().unstack(fill_value=0)
+
+# Sous-figure (1,2) : distribution mensuelle des classes (stacked bar).
 monthly_class.plot(kind='bar', stacked=True, ax=axes[1, 2], 
                    color=[colors_map[c] for c in class_order], edgecolor='black')
 axes[1, 2].set_xlabel('Mois')
@@ -153,6 +161,7 @@ axes[1, 2].set_xticklabels(['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun',
                             'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'], rotation=45)
 
 plt.tight_layout()
+# Sauvegarde de la figure principale de l'étape 3.
 plt.savefig(OUTPUT_DIR / "step3_target_creation.png", dpi=300, bbox_inches='tight')
 print(f"\nVisualisations sauvegardées : {OUTPUT_DIR / 'step3_target_creation.png'}")
 

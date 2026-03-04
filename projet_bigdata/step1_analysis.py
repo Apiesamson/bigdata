@@ -50,6 +50,7 @@ print(df.describe())
 
 print("\n5. VALEURS MANQUANTES")
 print("-"*70)
+# Calcul du nombre de NA par colonne et du pourcentage associé.
 missing = df.isnull().sum()
 missing_pct = (missing / len(df)) * 100
 missing_df = pd.DataFrame({
@@ -67,6 +68,7 @@ print(f"Nombre de pays uniques   : {df['Country'].nunique()}")
 # Figure récapitulative en 2x2.
 fig, axes = plt.subplots(2, 2, figsize=(15, 10))
 
+# Sous-figure (0,0) : barres horizontales des NA par variable.
 missing_data = df.isnull().sum()
 missing_data = missing_data[missing_data > 0]
 axes[0, 0].barh(missing_data.index, missing_data.values, color='coral')
@@ -74,6 +76,8 @@ axes[0, 0].set_xlabel('Nombre de valeurs manquantes')
 axes[0, 0].set_title('Valeurs manquantes par variable')
 axes[0, 0].grid(axis='x', alpha=0.3)
 
+# Sous-figure (0,1) : histogramme de la distribution de température.
+# On retire les lignes sans température pour éviter les valeurs invalides.
 df_clean = df.dropna(subset=['AverageTemperature'])
 axes[0, 1].hist(df_clean['AverageTemperature'], bins=50, color='skyblue', edgecolor='black')
 axes[0, 1].set_xlabel('Température (°C)')
@@ -81,6 +85,8 @@ axes[0, 1].set_ylabel('Fréquence')
 axes[0, 1].set_title('Distribution des températures moyennes')
 axes[0, 1].grid(axis='y', alpha=0.3)
 
+# Sous-figure (1,0) : évolution du nombre de mesures par année.
+# Conversion de la date et extraction de l'année.
 df['dt'] = pd.to_datetime(df['dt'])
 df['Year'] = df['dt'].dt.year
 yearly_data = df.groupby('Year').size()
@@ -90,6 +96,7 @@ axes[1, 0].set_ylabel('Nombre de mesures')
 axes[1, 0].set_title('Nombre de mesures par année')
 axes[1, 0].grid(alpha=0.3)
 
+# Sous-figure (1,1) : top 10 pays en nombre d'observations.
 top_countries = df['Country'].value_counts().head(10)
 axes[1, 1].barh(range(len(top_countries)), top_countries.values, color='purple', alpha=0.7)
 axes[1, 1].set_yticks(range(len(top_countries)))
@@ -99,6 +106,7 @@ axes[1, 1].set_title('Top 10 des pays avec le plus de mesures')
 axes[1, 1].grid(axis='x', alpha=0.3)
 
 plt.tight_layout()
+# Sauvegarde de la figure principale de l'étape 1.
 plt.savefig(OUTPUT_DIR / "step1_exploratory_analysis.png", dpi=300, bbox_inches='tight')
 print(f"\nVisualisations sauvegardées : {OUTPUT_DIR / 'step1_exploratory_analysis.png'}")
 
@@ -113,6 +121,7 @@ summary = {
     'periode_fin': df['Year'].max()
 }
 
+# Export d'un résumé textuel (utile pour le rapport).
 with open(OUTPUT_DIR / "step1_summary.txt", 'w', encoding='utf-8') as f:
     f.write("RÉSUMÉ DE L'ANALYSE EXPLORATOIRE\n")
     f.write("="*50 + "\n\n")

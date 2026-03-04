@@ -68,12 +68,15 @@ print(f"Données de test        : {len(X_test):,} observations")
 print("\n4. CONSTRUCTION DE L'ARBRE DE DÉCISION")
 print("-"*70)
 # Construction du classifieur (hyperparamètres guidés par l'interprétabilité).
+# - max_depth limite la complexité de l'arbre (meilleure lisibilité des règles)
+# - min_samples_split/min_samples_leaf évitent les règles trop spécifiques
 clf = DecisionTreeClassifier(
     max_depth=5, 
     min_samples_split=100, 
     min_samples_leaf=50,
     random_state=42
 )
+# Entraînement du modèle sur les données d'apprentissage.
 clf.fit(X_train, y_train)
 print("Arbre de décision entraîné")
 
@@ -102,6 +105,7 @@ print(f"  Précision moyenne : {cv_scores.mean():.3f} (±{cv_scores.std():.3f})"
 print("\n7. MATRICE DE CONFUSION")
 print("-"*70)
 # Matrice de confusion sur le test.
+# L'ordre des labels est fixé pour stabiliser l'interprétation.
 y_pred = clf.predict(X_test)
 cm = confusion_matrix(y_test, y_pred, labels=['Basse', 'Moyenne', 'Élevée'])
 print(cm)
@@ -117,6 +121,10 @@ print("-"*70)
 tree_rules = export_text(clf, feature_names=list(X.columns), max_depth=3)
 print(tree_rules)
 
+# -----------------------------------------------------------------------------
+# VISUALISATIONS
+# -----------------------------------------------------------------------------
+# 1) Arbre complet (figure large)
 fig = plt.figure(figsize=(24, 12))
 plot_tree(clf, 
           feature_names=X.columns,
@@ -130,8 +138,10 @@ plt.title("Arbre de décision - Classification des températures",
 plt.savefig(OUTPUT_DIR / "step5_decision_tree_full.png", dpi=300, bbox_inches='tight')
 print(f"\nArbre de décision complet sauvegardé : {OUTPUT_DIR / 'step5_decision_tree_full.png'}")
 
+# 2) Tableau de bord synthétique (2x2) : importance, confusion, scores, métriques
 fig, axes = plt.subplots(2, 2, figsize=(16, 12))
 
+# 2.1 Importance des variables (barres horizontales)
 importance_df = feature_importance.sort_values('Importance', ascending=True)
 axes[0, 0].barh(importance_df['Variable'], importance_df['Pourcentage'], 
                 color=['#3498db', '#e74c3c'], edgecolor='black', linewidth=2)
@@ -141,6 +151,7 @@ axes[0, 0].grid(axis='x', alpha=0.3)
 for i, v in enumerate(importance_df['Pourcentage']):
     axes[0, 0].text(v + 1, i, f'{v:.1f}%', va='center', fontweight='bold')
 
+# 2.2 Matrice de confusion (heatmap)
 sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', 
             xticklabels=['Basse', 'Moyenne', 'Élevée'],
             yticklabels=['Basse', 'Moyenne', 'Élevée'],
@@ -149,6 +160,7 @@ axes[0, 1].set_xlabel('Classe prédite')
 axes[0, 1].set_ylabel('Classe réelle')
 axes[0, 1].set_title('Matrice de confusion', fontweight='bold', fontsize=12)
 
+# 2.3 Scores globaux (train / test / cross-validation)
 metrics = ['Train', 'Test', 'CV (mean)']
 scores = [train_score, test_score, cv_scores.mean()]
 colors_perf = ['#2ecc71', '#3498db', '#9b59b6']
@@ -163,6 +175,7 @@ for bar, score in zip(bars, scores):
                     f'{score:.3f}\n({score*100:.1f}%)',
                     ha='center', va='bottom', fontweight='bold')
 
+# 2.4 Métriques par classe (precision / recall / F1)
 report_dict = classification_report(y_test, y_pred, 
                                     target_names=['Basse', 'Moyenne', 'Élevée'],
                                     output_dict=True)
@@ -189,6 +202,9 @@ plt.tight_layout()
 plt.savefig(OUTPUT_DIR / "step5_model_performance.png", dpi=300, bbox_inches='tight')
 print(f"Métriques de performance sauvegardées : {OUTPUT_DIR / 'step5_model_performance.png'}")
 
+# -----------------------------------------------------------------------------
+# EXPORT TEXTE : règles et interprétation métier
+# -----------------------------------------------------------------------------
 with open(OUTPUT_DIR / "step5_rules_interpretation.txt", 'w', encoding='utf-8') as f:
     f.write("RÈGLES DE DÉCISION ET INTERPRÉTATION MÉTIER\n")
     f.write("="*70 + "\n\n")

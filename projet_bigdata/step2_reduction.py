@@ -62,6 +62,8 @@ print(f"Réduction du volume : {reduction_pct:.1f}%")
 print("\n5. STATISTIQUES COMPARATIVES")
 print("-"*70)
 # Comparaison de quelques statistiques avant/après réduction.
+# Ces métriques permettent de vérifier que la réduction conserve une distribution
+# cohérente de la variable principale (température) tout en changeant la période.
 stats_comparison = pd.DataFrame({
     'Dataset original': [
         len(df),
@@ -83,6 +85,7 @@ print(stats_comparison)
 fig, axes = plt.subplots(2, 2, figsize=(15, 10))
 
 # 5.1 Évolution du volume de données à chaque étape.
+# Graphique utile pour justifier la stratégie de réduction.
 stages = ['Original', 'Sans NA', 'Filtré\n(≥1950)']
 counts = [len(df), len(df_clean), len(df_reduced)]
 colors = ['#ff9999', '#ffcc99', '#99ccff']
@@ -96,6 +99,7 @@ for i, v in enumerate(counts):
 yearly_counts_original = df.groupby('Year').size()
 yearly_counts_reduced = df_reduced.groupby('Year').size()
 # 5.2 Distribution temporelle (avant/après 1950).
+# La ligne verticale matérialise le seuil choisi.
 axes[0, 1].plot(yearly_counts_original.index, yearly_counts_original.values, 
                 label='Original', linewidth=2, alpha=0.7, color='red')
 axes[0, 1].plot(yearly_counts_reduced.index, yearly_counts_reduced.values, 
@@ -108,6 +112,7 @@ axes[0, 1].legend()
 axes[0, 1].grid(alpha=0.3)
 
 # 5.3 Distribution des températures (histogrammes).
+# Permet de vérifier si la distribution globale change fortement après filtrage.
 axes[1, 0].hist(df['AverageTemperature'].dropna(), bins=50, alpha=0.5, 
                 label='Original', color='red', edgecolor='black')
 axes[1, 0].hist(df_reduced['AverageTemperature'], bins=50, alpha=0.7, 
@@ -119,6 +124,7 @@ axes[1, 0].legend()
 axes[1, 0].grid(axis='y', alpha=0.3)
 
 # 5.4 Proportion de lignes conservées.
+# Visualisation synthétique de la part de données supprimée.
 labels = ['Données\nsupprimées', 'Données\nconservées']
 sizes = [len(df) - len(df_reduced), len(df_reduced)]
 colors_pie = ['#ff6b6b', '#4ecdc4']
@@ -128,14 +134,17 @@ axes[1, 1].pie(sizes, explode=explode, labels=labels, colors=colors_pie,
 axes[1, 1].set_title('Proportion de données conservées')
 
 plt.tight_layout()
+# Sauvegarde de la figure principale de l'étape 2.
 plt.savefig(OUTPUT_DIR / "step2_data_reduction.png", dpi=300, bbox_inches='tight')
 print(f"\nVisualisations sauvegardées : {OUTPUT_DIR / 'step2_data_reduction.png'}")
 
 # Sauvegarde du dataset réduit.
+# Ce fichier sera la base de l'étape 3.
 df_reduced.to_csv("dataset_reduced.csv", index=False)
 print(f"Dataset réduit sauvegardé : dataset_reduced.csv")
 
 # Export d'un résumé textuel de la justification.
+# Sert directement au rapport (argumentaire sur le choix du filtre temporel).
 with open(OUTPUT_DIR / "step2_justification.txt", 'w', encoding='utf-8') as f:
     f.write("JUSTIFICATION DE LA STRATÉGIE DE RÉDUCTION\n")
     f.write("="*50 + "\n\n")

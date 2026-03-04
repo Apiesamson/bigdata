@@ -48,6 +48,9 @@ print(f"Mois : {df['Month'].min()} - {df['Month'].max()}")
 print("\n3. SÉLECTION DES VARIABLES POUR SIPINA")
 print("-"*70)
 # Variables finales : explicatives + cible (sans température continue).
+# Remarque : on conserve Latitude/Longitude au format texte (ex: 5.63N) car
+# l'objectif est un export direct Sipina (les conversions numériques peuvent
+# être traitées en amélioration ultérieure).
 variables_to_keep = ['City', 'Country', 'Latitude', 'Longitude', 'Year', 'Month', 'temperature_class']
 df_final = df[variables_to_keep].copy()
 
@@ -69,6 +72,7 @@ else:
 
 print("\n5. STATISTIQUES DESCRIPTIVES DES VARIABLES NUMÉRIQUES")
 print("-"*70)
+# Contrôle rapide des distributions numériques.
 print(df_final[['Year', 'Month']].describe())
 
 print("\n6. CARDINALITÉ DES VARIABLES CATÉGORIELLES")
@@ -80,6 +84,7 @@ print(f"Nombre de classes de temp.  : {df_final['temperature_class'].nunique()}"
 
 fig, axes = plt.subplots(2, 3, figsize=(18, 10))
 
+# Sous-figure (0,0) : top villes les plus représentées.
 top_cities = df_final['City'].value_counts().head(15)
 axes[0, 0].barh(range(len(top_cities)), top_cities.values, color='steelblue', edgecolor='black')
 axes[0, 0].set_yticks(range(len(top_cities)))
@@ -88,6 +93,7 @@ axes[0, 0].set_xlabel('Nombre d\'observations')
 axes[0, 0].set_title('Top 15 des villes', fontweight='bold')
 axes[0, 0].grid(axis='x', alpha=0.3)
 
+# Sous-figure (0,1) : top pays les plus représentés.
 top_countries = df_final['Country'].value_counts().head(15)
 axes[0, 1].barh(range(len(top_countries)), top_countries.values, color='coral', edgecolor='black')
 axes[0, 1].set_yticks(range(len(top_countries)))
@@ -96,6 +102,7 @@ axes[0, 1].set_xlabel('Nombre d\'observations')
 axes[0, 1].set_title('Top 15 des pays', fontweight='bold')
 axes[0, 1].grid(axis='x', alpha=0.3)
 
+# Sous-figure (0,2) : distribution de la variable cible.
 class_counts = df_final['temperature_class'].value_counts()
 colors_map = {'Basse': '#3498db', 'Moyenne': '#f39c12', 'Élevée': '#e74c3c'}
 colors = [colors_map[c] for c in class_counts.index]
@@ -106,6 +113,7 @@ axes[0, 2].grid(axis='y', alpha=0.3)
 for i, v in enumerate(class_counts.values):
     axes[0, 2].text(i, v + 500, f'{v:,}', ha='center', va='bottom', fontweight='bold')
 
+# Sous-figure (1,0) : distribution du nombre d'observations par année.
 yearly_counts = df_final['Year'].value_counts().sort_index()
 axes[1, 0].plot(yearly_counts.index, yearly_counts.values, color='green', linewidth=2, marker='o', markersize=3)
 axes[1, 0].set_xlabel('Année')
@@ -113,6 +121,7 @@ axes[1, 0].set_ylabel('Nombre d\'observations')
 axes[1, 0].set_title('Distribution par année', fontweight='bold')
 axes[1, 0].grid(alpha=0.3)
 
+# Sous-figure (1,1) : distribution du nombre d'observations par mois.
 monthly_counts = df_final['Month'].value_counts().sort_index()
 month_labels = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc']
 axes[1, 1].bar(monthly_counts.index, monthly_counts.values, color='purple', alpha=0.7, edgecolor='black')
@@ -123,6 +132,7 @@ axes[1, 1].set_xticks(range(1, 13))
 axes[1, 1].set_xticklabels(month_labels, rotation=45)
 axes[1, 1].grid(axis='y', alpha=0.3)
 
+# Sous-figure (1,2) : tableau de synthèse (type, cardinalité, NA) des variables.
 variables_info = pd.DataFrame({
     'Variable': variables_to_keep,
     'Type': [str(df_final[v].dtype) for v in variables_to_keep],
@@ -143,6 +153,7 @@ for i in range(len(variables_info.columns)):
 axes[1, 2].set_title('Résumé des variables', fontweight='bold', pad=20)
 
 plt.tight_layout()
+# Sauvegarde de la figure principale de l'étape 4.
 plt.savefig(OUTPUT_DIR / "step4_sipina_preparation.png", dpi=300, bbox_inches='tight')
 print(f"\nVisualisations sauvegardées : {OUTPUT_DIR / 'step4_sipina_preparation.png'}")
 
