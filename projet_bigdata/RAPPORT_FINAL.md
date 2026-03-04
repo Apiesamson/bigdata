@@ -83,7 +83,7 @@ df_reduced = df[df['dt'].dt.year >= 1950]
 - **Après filtrage temporel** : **~76 400 lignes**
 - **Réduction** : 68% du volume initial
 
-✓ Contrainte respectée : plusieurs dizaines de milliers de lignes conservées
+Contrainte respectée : plusieurs dizaines de milliers de lignes conservées
 
 ---
 
@@ -318,11 +318,11 @@ Les opérations de sélection/suppression de colonnes bénéficient peu du calcu
 
 ### Objectifs atteints
 
-✓ **Manipulation de données conséquentes** : Traitement de ~240k lignes réduites à ~76k lignes pertinentes
+**Manipulation de données conséquentes** : Traitement de ~240k lignes réduites à ~76k lignes pertinentes
 
-✓ **Structuration du traitement** : Pipeline clair en 6 étapes reproductibles
+**Structuration du traitement** : Pipeline clair en 6 étapes reproductibles
 
-✓ **Analyse exploitable** : Règles de décision interprétables pour des cas d'usage métier
+**Analyse exploitable** : Règles de décision interprétables pour des cas d'usage métier
 
 ### Compétences démontrées
 
@@ -335,11 +335,11 @@ Les opérations de sélection/suppression de colonnes bénéficient peu du calcu
 
 ### Livrables produits
 
-1. ✓ Scripts Python commentés (step1 à step5)
-2. ✓ Fichier final pour Sipina (76 408 lignes)
-3. ✓ Rapport structuré (ce document)
-4. ✓ Analyse Big Data (step6_bigdata_perspective.md)
-5. ✓ Visualisation de l'arbre de décision (decision_tree.png - à générer)
+1. Scripts Python commentés (step1 à step5)
+2. Fichier final pour Sipina (76 408 lignes)
+3. Rapport structuré (ce document)
+4. Analyse Big Data (step6_bigdata_perspective.md)
+5. Visualisation de l'arbre de décision (decision_tree.png - à générer)
 
 ### Perspectives d'amélioration
 

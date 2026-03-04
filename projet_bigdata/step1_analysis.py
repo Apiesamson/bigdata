@@ -1,20 +1,33 @@
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
+"""Étape 1 - Analyse exploratoire des données climatiques.
+
+Ce script charge le fichier source et produit :
+- des statistiques descriptives et un diagnostic des valeurs manquantes
+- des agrégations simples (par année, pays)
+- une figure récapitulative enregistrée dans le dossier outputs/
+- un fichier texte de synthèse
+"""
+
 from pathlib import Path
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import seaborn as sns
 
 sns.set_style("whitegrid")
 plt.rcParams['figure.figsize'] = (12, 6)
 plt.rcParams['font.size'] = 10
 
+# Dossier de sortie contenant les figures et les fichiers texte.
 OUTPUT_DIR = Path("outputs")
 OUTPUT_DIR.mkdir(exist_ok=True)
 
+# En-tête console (suivi de l'exécution).
 print("="*70)
 print("ÉTAPE 1 - ANALYSE EXPLORATOIRE DES DONNÉES CLIMATIQUES")
 print("="*70)
 
+# Chargement des données brutes.
 df = pd.read_csv("GlobalLandTemperaturesByMajorCity.csv")
 
 print("\n1. DIMENSIONS DU DATASET")
@@ -51,6 +64,7 @@ print("-"*70)
 print(f"Nombre de villes uniques : {df['City'].nunique()}")
 print(f"Nombre de pays uniques   : {df['Country'].nunique()}")
 
+# Figure récapitulative en 2x2.
 fig, axes = plt.subplots(2, 2, figsize=(15, 10))
 
 missing_data = df.isnull().sum()
@@ -86,7 +100,7 @@ axes[1, 1].grid(axis='x', alpha=0.3)
 
 plt.tight_layout()
 plt.savefig(OUTPUT_DIR / "step1_exploratory_analysis.png", dpi=300, bbox_inches='tight')
-print(f"\n✓ Visualisations sauvegardées : {OUTPUT_DIR / 'step1_exploratory_analysis.png'}")
+print(f"\nVisualisations sauvegardées : {OUTPUT_DIR / 'step1_exploratory_analysis.png'}")
 
 summary = {
     'total_lignes': df.shape[0],

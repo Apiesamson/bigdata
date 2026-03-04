@@ -1,27 +1,44 @@
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
+"""Étape 4 - Préparation des données pour Sipina.
+
+Objectif : construire un fichier final prêt à importer dans Sipina en ne
+conservant que les variables utiles, et en évitant la fuite d'information
+(suppression de la température continue après création de la cible).
+
+Sorties :
+- dataset_final_sipina.csv
+- outputs/step4_sipina_preparation.png
+- outputs/step4_variables_description.txt
+"""
+
 from pathlib import Path
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import seaborn as sns
 
 sns.set_style("whitegrid")
 plt.rcParams['figure.figsize'] = (12, 6)
 
+# Dossier de sortie.
 OUTPUT_DIR = Path("outputs")
 OUTPUT_DIR.mkdir(exist_ok=True)
 
+# En-tête console.
 print("="*70)
 print("ÉTAPE 4 - PRÉPARATION DES DONNÉES POUR SIPINA")
 print("="*70)
 
 print("\n1. CHARGEMENT DU DATASET AVEC VARIABLE CIBLE")
 print("-"*70)
+# Chargement du dataset enrichi (issu de l'étape 3).
 df = pd.read_csv("dataset_with_target.csv")
 print(f"Dimensions : {df.shape[0]:,} lignes × {df.shape[1]} colonnes")
 print(f"Colonnes : {list(df.columns)}")
 
 print("\n2. CONVERSION ET EXTRACTION DES VARIABLES TEMPORELLES")
 print("-"*70)
+# Conversion de la date et extraction de Year/Month.
 df['dt'] = pd.to_datetime(df['dt'])
 df['Year'] = df['dt'].dt.year
 df['Month'] = df['dt'].dt.month
@@ -30,6 +47,7 @@ print(f"Mois : {df['Month'].min()} - {df['Month'].max()}")
 
 print("\n3. SÉLECTION DES VARIABLES POUR SIPINA")
 print("-"*70)
+# Variables finales : explicatives + cible (sans température continue).
 variables_to_keep = ['City', 'Country', 'Latitude', 'Longitude', 'Year', 'Month', 'temperature_class']
 df_final = df[variables_to_keep].copy()
 
@@ -41,12 +59,13 @@ print(f"  - temperature_class : {df_final['temperature_class'].dtype}")
 
 print("\n4. VÉRIFICATION DES VALEURS MANQUANTES")
 print("-"*70)
+# Contrôle qualité : Sipina nécessite un fichier sans valeurs manquantes.
 missing = df_final.isnull().sum()
 print(missing)
 if missing.sum() == 0:
-    print("✓ Aucune valeur manquante détectée")
+    print("Aucune valeur manquante détectée")
 else:
-    print("⚠ Attention : Valeurs manquantes détectées")
+    print("Attention : Valeurs manquantes détectées")
 
 print("\n5. STATISTIQUES DESCRIPTIVES DES VARIABLES NUMÉRIQUES")
 print("-"*70)
@@ -54,6 +73,7 @@ print(df_final[['Year', 'Month']].describe())
 
 print("\n6. CARDINALITÉ DES VARIABLES CATÉGORIELLES")
 print("-"*70)
+# Informations utiles pour la modélisation (catégories, classes, etc.).
 print(f"Nombre de villes uniques    : {df_final['City'].nunique()}")
 print(f"Nombre de pays uniques      : {df_final['Country'].nunique()}")
 print(f"Nombre de classes de temp.  : {df_final['temperature_class'].nunique()}")
@@ -126,9 +146,11 @@ plt.tight_layout()
 plt.savefig(OUTPUT_DIR / "step4_sipina_preparation.png", dpi=300, bbox_inches='tight')
 print(f"\nVisualisations sauvegardées : {OUTPUT_DIR / 'step4_sipina_preparation.png'}")
 
+# Sauvegarde du fichier final à importer dans Sipina.
 df_final.to_csv("dataset_final_sipina.csv", index=False)
 print(f"Dataset final sauvegardé : dataset_final_sipina.csv")
 
+# Export texte : description des variables et transformations.
 with open(OUTPUT_DIR / "step4_variables_description.txt", 'w', encoding='utf-8') as f:
     f.write("DESCRIPTION DES VARIABLES POUR SIPINA\n")
     f.write("="*50 + "\n\n")

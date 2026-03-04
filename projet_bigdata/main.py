@@ -10,7 +10,15 @@ import time
 from pathlib import Path
 
 def run_script(script_name, description):
-    """Exécute un script et affiche le résultat"""
+    """Exécute un script Python via l'interpréteur courant.
+
+    Args:
+        script_name: Nom (ou chemin relatif) du script à exécuter.
+        description: Libellé lisible affiché dans la console.
+
+    Returns:
+        True si le script termine avec un code retour 0, sinon False.
+    """
     print(f"\n{'='*80}")
     print(f"ÉTAPE : {description}")
     print(f"Script : {script_name}")
@@ -27,31 +35,31 @@ def run_script(script_name, description):
         )
         
         if result.returncode == 0:
-            print(f"✅ {script_name} exécuté avec succès")
-            print(f"⏱️  Temps d'exécution : {time.time() - start_time:.2f} secondes")
+            print(f"[OK] {script_name} exécuté avec succès")
+            print(f"Temps d'exécution : {time.time() - start_time:.2f} secondes")
             if result.stdout:
-                print("\n📋 Résultats principaux :")
+                print("\nRésultats principaux :")
                 lines = result.stdout.strip().split('\n')
                 for line in lines[-5:]:  # Affiche les 5 dernières lignes
                     print(f"   {line}")
         else:
-            print(f"❌ Erreur lors de l'exécution de {script_name}")
+            print(f"[ERREUR] Erreur lors de l'exécution de {script_name}")
             print(f"Code d'erreur : {result.returncode}")
             if result.stderr:
                 print(f"Message d'erreur : {result.stderr}")
             return False
             
     except subprocess.TimeoutExpired:
-        print(f"⏰ Timeout lors de l'exécution de {script_name}")
+        print(f"[ERREUR] Timeout lors de l'exécution de {script_name}")
         return False
     except Exception as e:
-        print(f"💥 Exception : {e}")
+        print(f"[ERREUR] Exception : {e}")
         return False
     
     return True
 
 def check_files():
-    """Vérifie que les fichiers nécessaires existent"""
+    """Vérifie la présence des fichiers indispensables au pipeline."""
     required_files = [
         "GlobalLandTemperaturesByMajorCity.csv",
         "step1_analysis_optimized.py",
@@ -61,27 +69,27 @@ def check_files():
         "step5_analysis_sipina_optimized.py"
     ]
     
-    print("🔍 Vérification des fichiers requis...")
+    print("Vérification des fichiers requis...")
     missing_files = []
     
     for file in required_files:
         if not Path(file).exists():
             missing_files.append(file)
-            print(f"❌ {file}")
+            print(f"[MANQUANT] {file}")
         else:
-            print(f"✅ {file}")
+            print(f"[OK] {file}")
     
     if missing_files:
-        print(f"\n⚠️  Fichiers manquants : {missing_files}")
+        print(f"\n[ERREUR] Fichiers manquants : {missing_files}")
         return False
     
-    print("✅ Tous les fichiers requis sont présents")
+    print("Tous les fichiers requis sont présents")
     return True
 
 def show_summary():
-    """Affiche le résumé final"""
+    """Affiche un résumé des artefacts générés par le pipeline."""
     print(f"\n{'='*80}")
-    print("🎉 RÉSUMÉ FINAL DE L'EXÉCUTION")
+    print("RÉSUMÉ FINAL DE L'EXÉCUTION")
     print(f"{'='*80}")
     
     # Vérification des fichiers générés
@@ -91,46 +99,52 @@ def show_summary():
         "dataset_final_sipina.csv"
     ]
     
-    print("\n📊 Fichiers de données générés :")
+    print("\nFichiers de données générés :")
     for file in output_files:
         if Path(file).exists():
             size = Path(file).stat().st_size / 1024  # KB
-            print(f"✅ {file} ({size:.1f} KB)")
+            print(f"{file} ({size:.1f} KB)")
         else:
-            print(f"❌ {file}")
+            print(f"[MANQUANT] {file}")
     
     # Vérification des visualisations
     output_dir = Path("outputs")
     if output_dir.exists():
         png_files = list(output_dir.glob("*.png"))
         txt_files = list(output_dir.glob("*.txt"))
-        print(f"\n📈 Visualisations générées :")
-        print(f"   🖼️  Images PNG : {len(png_files)}")
-        print(f"   📝 Fichiers TXT : {len(txt_files)}")
+        print(f"\nVisualisations générées :")
+        print(f"   Images PNG : {len(png_files)}")
+        print(f"   Fichiers TXT : {len(txt_files)}")
     else:
-        print("\n❌ Dossier 'outputs' non trouvé")
+        print("\n[MANQUANT] Dossier 'outputs' non trouvé")
     
-    print(f"\n📚 Prochaines étapes :")
+    print(f"\nProchaines étapes :")
     print(f"   1. Consultez les visualisations dans le dossier 'outputs/'")
     print(f"   2. Compilez le rapport LaTeX : compile_rapport.bat")
     print(f"   3. Importez 'dataset_final_sipina.csv' dans Sipina")
     
-    print(f"\n✨ Projet terminé avec succès !")
+    print(f"\nProjet terminé.")
 
 def main():
-    """Fonction principale"""
-    print("🚀 DÉMARRAGE DU PROJET D'ANALYSE CLIMATIQUE")
+    """Point d'entrée principal.
+
+    - Vérifie les prérequis (fichiers)
+    - Crée le dossier outputs
+    - Exécute les scripts d'étapes (versions optimisées)
+    - Affiche un résumé final
+    """
+    print("DÉMARRAGE DU PROJET D'ANALYSE CLIMATIQUE")
     print(f"{'='*80}")
     
     # Vérification préliminaire
     if not check_files():
-        print("\n❌ Vérification échouée. Arrêt du programme.")
+        print("\n[ERREUR] Vérification échouée. Arrêt du programme.")
         return
     
     # Création du dossier outputs
     output_dir = Path("outputs")
     output_dir.mkdir(exist_ok=True)
-    print(f"📁 Dossier 'outputs' prêt")
+    print("Dossier 'outputs' prêt")
     
     # Liste des étapes à exécuter
     steps = [
@@ -146,14 +160,14 @@ def main():
     for script, description in steps:
         if not run_script(script, description):
             failed_steps.append(script)
-            print(f"⚠️  Échec de l'étape : {description}")
+            print(f"[ERREUR] Échec de l'étape : {description}")
             continue
         
-        input("\n⏸️  Appuyez sur Entrée pour continuer à l'étape suivante...")
+        input("\nAppuyez sur Entrée pour continuer à l'étape suivante...")
     
     # Résumé final
     if failed_steps:
-        print(f"\n❌ Étapes échouées : {failed_steps}")
+        print(f"\n[ERREUR] Étapes échouées : {failed_steps}")
     else:
         show_summary()
 
@@ -161,9 +175,9 @@ if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
-        print("\n\n⏹️  Exécution interrompue par l'utilisateur")
+        print("\n\nExécution interrompue par l'utilisateur")
     except Exception as e:
-        print(f"\n💥 Erreur inattendue : {e}")
+        print(f"\n[ERREUR] Erreur inattendue : {e}")
     finally:
         print(f"\n{'='*80}")
         print("Fin du programme")

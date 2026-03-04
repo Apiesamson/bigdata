@@ -1,26 +1,42 @@
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
+"""Étape 3 - Création d'une variable cible.
+
+Objectif : transformer la température continue (AverageTemperature) en une
+variable catégorielle à 3 classes (Basse / Moyenne / Élevée) via des quantiles.
+
+Sorties :
+- dataset_with_target.csv
+- outputs/step3_target_creation.png
+- outputs/step3_target_description.txt
+"""
+
 from pathlib import Path
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import seaborn as sns
 
 sns.set_style("whitegrid")
 plt.rcParams['figure.figsize'] = (12, 6)
 
+# Dossier de sortie.
 OUTPUT_DIR = Path("outputs")
 OUTPUT_DIR.mkdir(exist_ok=True)
 
+# En-tête console.
 print("="*70)
 print("ÉTAPE 3 - CRÉATION DE LA VARIABLE CIBLE")
 print("="*70)
 
 print("\n1. CHARGEMENT DU DATASET RÉDUIT")
 print("-"*70)
+# Chargement du dataset réduit (issu de l'étape 2).
 df = pd.read_csv("dataset_reduced.csv")
 print(f"Dimensions : {df.shape[0]:,} lignes × {df.shape[1]} colonnes")
 
 print("\n2. CALCUL DES QUANTILES")
 print("-"*70)
+# Les quantiles permettent d'obtenir une répartition équilibrée des classes.
 q33 = df['AverageTemperature'].quantile(0.33)
 q66 = df['AverageTemperature'].quantile(0.66)
 print(f"Quantile 33% : {q33:.2f}°C")
@@ -28,6 +44,8 @@ print(f"Quantile 66% : {q66:.2f}°C")
 
 print("\n3. CRÉATION DE LA VARIABLE CIBLE")
 print("-"*70)
+
+# Fonction de binning (3 classes) utilisée via apply.
 
 def classify_temperature(temp, q1, q2):
     """Classifie la température en 3 catégories"""
@@ -55,6 +73,7 @@ print(class_summary)
 
 print("\n5. STATISTIQUES PAR CLASSE")
 print("-"*70)
+# Statistiques de la température par classe (cohérence des seuils).
 stats_by_class = df.groupby('temperature_class')['AverageTemperature'].agg([
     ('Minimum', 'min'),
     ('Maximum', 'max'),
@@ -65,6 +84,7 @@ print(stats_by_class)
 
 fig, axes = plt.subplots(2, 3, figsize=(18, 10))
 
+# Ordre d'affichage des classes (cohérent dans tous les graphes).
 class_order = ['Basse', 'Moyenne', 'Élevée']
 colors_map = {'Basse': '#3498db', 'Moyenne': '#f39c12', 'Élevée': '#e74c3c'}
 counts = [class_counts[c] for c in class_order]
@@ -136,9 +156,11 @@ plt.tight_layout()
 plt.savefig(OUTPUT_DIR / "step3_target_creation.png", dpi=300, bbox_inches='tight')
 print(f"\nVisualisations sauvegardées : {OUTPUT_DIR / 'step3_target_creation.png'}")
 
+# Sauvegarde du dataset enrichi.
 df.to_csv("dataset_with_target.csv", index=False)
 print(f"Dataset avec variable cible sauvegardé : dataset_with_target.csv")
 
+# Export d'un descriptif textuel de la cible (pour le rapport).
 with open(OUTPUT_DIR / "step3_target_description.txt", 'w', encoding='utf-8') as f:
     f.write("DESCRIPTION DE LA VARIABLE CIBLE\n")
     f.write("="*50 + "\n\n")

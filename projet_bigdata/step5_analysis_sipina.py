@@ -1,30 +1,49 @@
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
-from sklearn.tree import DecisionTreeClassifier, export_text, plot_tree
-from sklearn.model_selection import train_test_split, cross_val_score
-from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
+"""Étape 5 - Modélisation et interprétation avec un arbre de décision.
+
+Objectif : valider la qualité du dataset Sipina et extraire des règles de
+décision interprétables (saisonnalité / tendance).
+
+Le modèle utilisé est un DecisionTreeClassifier scikit-learn, entraîné sur
+les variables Year et Month.
+
+Sorties :
+- outputs/step5_model_performance.png (importance, confusion matrix, métriques)
+- outputs/step5_decision_tree_full.png (arbre complet)
+- outputs/step5_rules_interpretation.txt (règles + interprétation métier)
+"""
+
 from pathlib import Path
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import seaborn as sns
+from sklearn.metrics import classification_report, confusion_matrix
+from sklearn.model_selection import cross_val_score, train_test_split
+from sklearn.tree import DecisionTreeClassifier, export_text, plot_tree
 
 sns.set_style("whitegrid")
 plt.rcParams['figure.figsize'] = (12, 6)
 
+# Dossier de sortie.
 OUTPUT_DIR = Path("outputs")
 OUTPUT_DIR.mkdir(exist_ok=True)
 
+# En-tête console.
 print("="*70)
 print("ÉTAPE 5 - MODÉLISATION AVEC ARBRE DE DÉCISION")
 print("="*70)
 
 print("\n1. CHARGEMENT DES DONNÉES")
 print("-"*70)
+# Chargement du dataset final (issu de l'étape 4).
 df = pd.read_csv("dataset_final_sipina.csv")
 print(f"Dimensions : {df.shape[0]:,} lignes × {df.shape[1]} colonnes")
 print(f"Variables : {list(df.columns)}")
 
 print("\n2. RÉPARTITION DE LA VARIABLE CIBLE")
 print("-"*70)
+# Diagnostic de la variable cible (équilibre de classes).
 class_counts = df['temperature_class'].value_counts()
 class_proportions = df['temperature_class'].value_counts(normalize=True) * 100
 print(class_counts)
@@ -33,6 +52,8 @@ print(class_proportions)
 
 print("\n3. PRÉPARATION DES DONNÉES POUR LA MODÉLISATION")
 print("-"*70)
+# Variables explicatives : on choisit volontairement Year/Month pour mesurer
+# la part de saisonnalité et la tendance long-terme.
 X = df[['Year', 'Month']]
 y = df['temperature_class']
 print(f"Variables explicatives : {list(X.columns)}")
@@ -46,6 +67,7 @@ print(f"Données de test        : {len(X_test):,} observations")
 
 print("\n4. CONSTRUCTION DE L'ARBRE DE DÉCISION")
 print("-"*70)
+# Construction du classifieur (hyperparamètres guidés par l'interprétabilité).
 clf = DecisionTreeClassifier(
     max_depth=5, 
     min_samples_split=100, 
@@ -57,6 +79,7 @@ print("Arbre de décision entraîné")
 
 print("\n5. IMPORTANCE DES VARIABLES")
 print("-"*70)
+# Importance des variables (Month vs Year).
 feature_importance = pd.DataFrame({
     'Variable': X.columns,
     'Importance': clf.feature_importances_,
@@ -66,6 +89,7 @@ print(feature_importance)
 
 print("\n6. PERFORMANCE DU MODÈLE")
 print("-"*70)
+# Scores train/test.
 train_score = clf.score(X_train, y_train)
 test_score = clf.score(X_test, y_test)
 print(f"Précision sur données d'entraînement : {train_score:.3f} ({train_score*100:.1f}%)")
@@ -77,16 +101,19 @@ print(f"  Précision moyenne : {cv_scores.mean():.3f} (±{cv_scores.std():.3f})"
 
 print("\n7. MATRICE DE CONFUSION")
 print("-"*70)
+# Matrice de confusion sur le test.
 y_pred = clf.predict(X_test)
 cm = confusion_matrix(y_test, y_pred, labels=['Basse', 'Moyenne', 'Élevée'])
 print(cm)
 
 print("\n8. RAPPORT DE CLASSIFICATION")
 print("-"*70)
+# Rapport precision/recall/F1 par classe.
 print(classification_report(y_test, y_pred, target_names=['Basse', 'Moyenne', 'Élevée']))
 
 print("\n9. RÈGLES DE DÉCISION EXTRAITES")
 print("-"*70)
+# Représentation textuelle des règles (extrait).
 tree_rules = export_text(clf, feature_names=list(X.columns), max_depth=3)
 print(tree_rules)
 

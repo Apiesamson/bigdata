@@ -1,32 +1,49 @@
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
+"""Étape 2 - Réduction du volume de données.
+
+Objectif : réduire le dataset initial à une période récente (>= 1950) après
+suppression des valeurs manquantes de température.
+
+Sorties :
+- dataset_reduced.csv
+- outputs/step2_data_reduction.png (figure récapitulative)
+- outputs/step2_justification.txt (justification et chiffres clés)
+"""
+
 from pathlib import Path
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import seaborn as sns
 
 sns.set_style("whitegrid")
 plt.rcParams['figure.figsize'] = (12, 6)
 
+# Dossier de sortie (figures et exports texte).
 OUTPUT_DIR = Path("outputs")
 OUTPUT_DIR.mkdir(exist_ok=True)
 
+# En-tête console.
 print("="*70)
 print("ÉTAPE 2 - RÉDUCTION DU VOLUME DE DONNÉES")
 print("="*70)
 
 print("\n1. CHARGEMENT DES DONNÉES")
 print("-"*70)
+# Chargement des données brutes.
 df = pd.read_csv("GlobalLandTemperaturesByMajorCity.csv")
 print(f"Dimensions initiales : {df.shape[0]:,} lignes × {df.shape[1]} colonnes")
 
 print("\n2. CONVERSION DE LA DATE")
 print("-"*70)
+# Conversion de la date et extraction de l'année (utilisée pour le filtre temporel).
 df['dt'] = pd.to_datetime(df['dt'])
 df['Year'] = df['dt'].dt.year
 print(f"Période couverte : {df['Year'].min()} - {df['Year'].max()}")
 
 print("\n3. SUPPRESSION DES VALEURS MANQUANTES")
 print("-"*70)
+# Suppression des lignes où la température moyenne est manquante.
 missing_before = df['AverageTemperature'].isnull().sum()
 df_clean = df.dropna(subset=['AverageTemperature'])
 missing_after = df_clean['AverageTemperature'].isnull().sum()
@@ -35,6 +52,7 @@ print(f"Lignes restantes : {len(df_clean):,}")
 
 print("\n4. FILTRAGE TEMPOREL (≥ 1950)")
 print("-"*70)
+# Filtrage de la période récente.
 YEAR_THRESHOLD = 1950
 df_reduced = df_clean[df_clean['Year'] >= YEAR_THRESHOLD].copy()
 print(f"Lignes après filtrage : {len(df_reduced):,}")
@@ -43,6 +61,7 @@ print(f"Réduction du volume : {reduction_pct:.1f}%")
 
 print("\n5. STATISTIQUES COMPARATIVES")
 print("-"*70)
+# Comparaison de quelques statistiques avant/après réduction.
 stats_comparison = pd.DataFrame({
     'Dataset original': [
         len(df),
@@ -63,6 +82,7 @@ print(stats_comparison)
 
 fig, axes = plt.subplots(2, 2, figsize=(15, 10))
 
+# 5.1 Évolution du volume de données à chaque étape.
 stages = ['Original', 'Sans NA', 'Filtré\n(≥1950)']
 counts = [len(df), len(df_clean), len(df_reduced)]
 colors = ['#ff9999', '#ffcc99', '#99ccff']
@@ -75,6 +95,7 @@ for i, v in enumerate(counts):
 
 yearly_counts_original = df.groupby('Year').size()
 yearly_counts_reduced = df_reduced.groupby('Year').size()
+# 5.2 Distribution temporelle (avant/après 1950).
 axes[0, 1].plot(yearly_counts_original.index, yearly_counts_original.values, 
                 label='Original', linewidth=2, alpha=0.7, color='red')
 axes[0, 1].plot(yearly_counts_reduced.index, yearly_counts_reduced.values, 
@@ -86,6 +107,7 @@ axes[0, 1].set_title('Distribution temporelle des données')
 axes[0, 1].legend()
 axes[0, 1].grid(alpha=0.3)
 
+# 5.3 Distribution des températures (histogrammes).
 axes[1, 0].hist(df['AverageTemperature'].dropna(), bins=50, alpha=0.5, 
                 label='Original', color='red', edgecolor='black')
 axes[1, 0].hist(df_reduced['AverageTemperature'], bins=50, alpha=0.7, 
@@ -96,6 +118,7 @@ axes[1, 0].set_title('Distribution des températures')
 axes[1, 0].legend()
 axes[1, 0].grid(axis='y', alpha=0.3)
 
+# 5.4 Proportion de lignes conservées.
 labels = ['Données\nsupprimées', 'Données\nconservées']
 sizes = [len(df) - len(df_reduced), len(df_reduced)]
 colors_pie = ['#ff6b6b', '#4ecdc4']
@@ -108,9 +131,11 @@ plt.tight_layout()
 plt.savefig(OUTPUT_DIR / "step2_data_reduction.png", dpi=300, bbox_inches='tight')
 print(f"\nVisualisations sauvegardées : {OUTPUT_DIR / 'step2_data_reduction.png'}")
 
+# Sauvegarde du dataset réduit.
 df_reduced.to_csv("dataset_reduced.csv", index=False)
 print(f"Dataset réduit sauvegardé : dataset_reduced.csv")
 
+# Export d'un résumé textuel de la justification.
 with open(OUTPUT_DIR / "step2_justification.txt", 'w', encoding='utf-8') as f:
     f.write("JUSTIFICATION DE LA STRATÉGIE DE RÉDUCTION\n")
     f.write("="*50 + "\n\n")
