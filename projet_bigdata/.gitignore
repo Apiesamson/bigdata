@@ -60,10 +60,6 @@ Thumbs.db
 *.lot
 *.lol
 
-# Output files
-outputs/*.png
-outputs/*.txt
-
 # Data files (keep originals)
 dataset_*.csv
 

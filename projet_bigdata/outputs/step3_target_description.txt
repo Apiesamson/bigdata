@@ -1,0 +1,24 @@
+DESCRIPTION DE LA VARIABLE CIBLE
+==================================================
+
+Variable créée : temperature_class
+
+Méthode : Classification par quantiles (33% et 66%)
+
+Seuils calculés :
+- Quantile 33% : 16.95°C
+- Quantile 66% : 25.04°C
+
+Classes définies :
+1. Basse   : Température ≤ 16.95°C
+2. Moyenne : 16.95°C < Température ≤ 25.04°C
+3. Élevée  : Température > 25.04°C
+
+Répartition :
+- Basse    : 25,214 observations (33.00%)
+- Moyenne  : 25,217 observations (33.00%)
+- Élevée   : 25,976 observations (34.00%)
+
+Justification :
+L'utilisation des quantiles garantit un équilibrage parfait des classes,
+évitant ainsi les biais lors de l'apprentissage automatique.

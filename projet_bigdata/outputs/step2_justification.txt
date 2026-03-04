@@ -1,0 +1,15 @@
+JUSTIFICATION DE LA STRATÉGIE DE RÉDUCTION
+==================================================
+
+Stratégie choisie : Filtrage temporel (≥ 1950)
+
+Justifications :
+1. Qualité des données : Les mesures modernes sont plus fiables
+2. Pertinence métier : Données récentes plus utiles pour l'analyse
+3. Volume conservé : 76,407 lignes (suffisant pour l'analyse)
+4. Réduction : 68.1% du volume initial
+
+Résultats :
+- Lignes originales : 239,177
+- Lignes conservées : 76,407
+- Période : 1950 - 2013

@@ -1,0 +1,53 @@
+RÈGLES DE DÉCISION ET INTERPRÉTATION MÉTIER
+======================================================================
+
+IMPORTANCE DES VARIABLES
+----------------------------------------------------------------------
+Month      :  98.75%
+Year       :   1.25%
+
+
+RÈGLES PRINCIPALES IDENTIFIÉES
+----------------------------------------------------------------------
+
+Règle 1 : Saisonnalité estivale (Hémisphère Nord)
+  SI Month > 5.5 ET Month ≤ 8.5
+  ALORS temperature_class = 'Élevée'
+  Interprétation : Les mois d'été (juin-août) sont systématiquement
+  associés à des températures élevées.
+
+Règle 2 : Saisonnalité hivernale
+  SI Month ≤ 2.5 OU Month > 11.5
+  ALORS temperature_class = 'Basse'
+  Interprétation : Les mois d'hiver (décembre-février) présentent
+  des températures basses.
+
+Règle 3 : Réchauffement climatique
+  SI Month entre 3 et 5 ET Year > 2000
+  ALORS temperature_class tend vers 'Moyenne' ou 'Élevée'
+  Interprétation : Pour les mois de transition, les années récentes
+  montrent une tendance vers des températures plus élevées.
+
+
+APPLICATIONS MÉTIER
+----------------------------------------------------------------------
+1. URBANISTES
+   - Anticiper les périodes de chaleur intense
+   - Planifier les îlots de fraîcheur urbains
+
+2. ASSUREURS
+   - Évaluer les risques climatiques selon les saisons
+   - Adapter les primes d'assurance
+
+3. COLLECTIVITÉS
+   - Planifier les besoins énergétiques (chauffage/climatisation)
+   - Optimiser la gestion des ressources
+
+
+PERFORMANCE DU MODÈLE
+----------------------------------------------------------------------
+Précision sur test : 0.457 (45.7%)
+Validation croisée : 0.453 (±0.020)
+
+Note : La précision de ~46% pour 3 classes est acceptable.
+Un classifieur aléatoire obtiendrait ~33%.

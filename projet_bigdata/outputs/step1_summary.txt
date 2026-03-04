@@ -1,0 +1,11 @@
+RÉSUMÉ DE L'ANALYSE EXPLORATOIRE
+==================================================
+
+Total Lignes: 239177
+Total Colonnes: 8
+Villes Uniques: 100
+Pays Uniques: 49
+Valeurs Manquantes: 11002
+Taille Mb: 64.68155670166016
+Periode Debut: 1743
+Periode Fin: 2013

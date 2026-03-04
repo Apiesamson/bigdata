@@ -1,0 +1,28 @@
+DESCRIPTION DES VARIABLES POUR SIPINA
+==================================================
+
+VARIABLES EXPLICATIVES :
+--------------------------------------------------
+1. City      : Nom de la ville (100 valeurs uniques)
+2. Country   : Pays (49 valeurs uniques)
+3. Latitude  : Position géographique Nord-Sud (format texte)
+4. Longitude : Position géographique Est-Ouest (format texte)
+5. Year      : Année de mesure (1950-2013)
+6. Month     : Mois de mesure (1-12)
+
+VARIABLE CIBLE :
+--------------------------------------------------
+temperature_class : Classe de température (Basse/Moyenne/Élevée)
+
+TRANSFORMATIONS APPLIQUÉES :
+--------------------------------------------------
+- Extraction de Year et Month à partir de la date
+- Suppression de la colonne 'dt' (date originale)
+- Suppression de 'AverageTemperature' (éviter data leakage)
+- Suppression de 'AverageTemperatureUncertainty' (non pertinent)
+
+QUALITÉ DES DONNÉES :
+--------------------------------------------------
+- Nombre total d'observations : 76,407
+- Valeurs manquantes : 0
+- Fichier prêt pour Sipina : dataset_final_sipina.csv
